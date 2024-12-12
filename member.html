@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Manajemen Member Pro</title>
+    <style>
+        /* Reset dan Base Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    transition: all 0.3s ease;
+}
+
+body {
+    font-family: 'Roboto Mono', monospace;
+    background-color: #0a0a0a;
+    color: #00ff41;
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 20px;
+    line-height: 1.6;
+}
+
+/* Typography */
+h1 {
+    text-align: center;
+    color: #00ff41;
+    border-bottom: 2px solid #00ff41;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+h2 {
+    color: #00ff41;
+    margin-bottom: 15px;
+    border-left: 4px solid #00ff41;
+    padding-left: 10px;
+}
+
+/* Form Styles */
+.form-member {
+    background-color: #1a1a1a;
+    border: 1px solid #00ff41;
+    border-radius: 8px;
+    padding: 25px;
+    margin-bottom: 20px;
+    box-shadow: 0 0 15px rgba(0, 255, 65, 0.3);
+}
+
+.form-member input {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 15px;
+    background-color: #0a0a0a;
+    border: 1px solid #00ff41;
+    color: #00ff41;
+    border-radius: 4px;
+    font-family: 'Roboto Mono', monospace;
+}
+
+.form-member input:focus {
+    outline: none;
+    box-shadow: 0 0 10px #00ff41;
+}
+
+.form-member button {
+    width: 100%;
+    padding: 12px;
+    background-color: #00ff41;
+    color: #0a0a0a;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.form-member button:hover {
+    background-color: #00cc33;
+}
+
+/* Search Input */
+#searchMember {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 20px;
+    background-color: #1a1a1a;
+    border: 1px solid #00ff41;
+    color: #00ff41;
+    border-radius: 4px;
+}
+
+#searchMember:focus {
+    outline: none;
+    box-shadow: 0 0 10px #00ff41;
+}
+
+/* Table Styles */
+.member-list {
+    background-color: #1a1a1a;
+    border: 1px solid #00ff41;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th, td {
+    padding: 15px;
+    text-align: left;
+    border-bottom: 1px solid #00ff41;
+}
+
+th {
+    background-color: #00ff41;
+    color: #0a0a0a;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+tr:nth-child(even) {
+    background-color: #111111;
+}
+
+tr:hover {
+    background-color: #2a2a2a;
+}
+
+/* Action Buttons */
+.member-item button {
+    padding: 8px 12px;
+    margin-right: 5px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: 'Roboto Mono', monospace;
+}
+
+.member-item .tambah-poin {
+    background-color: #00ff41;
+    color: #0a0a0a;
+}
+
+.member-item .tambah-poin:hover {
+    background-color: #00cc33;
+}
+
+.member-item button:not(.tambah-poin) {
+    background-color: #ff0040;
+    color: white;
+}
+
+.member-item button:not(.tambah-poin):hover {
+    background-color: #cc0033;
+}
+
+/* Export/Import Section */
+.export-import-section {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.export-import-section button,
+.export-import-section label {
+    padding: 12px 20px;
+    background-color: #00ff41;
+    color: #0a0a0a;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: 'Roboto Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.export-import-section button:hover,
+.export-import-section label:hover {
+    background-color: #00cc33;
+}
+
+/* File Input */
+.export-import-section input[type="file"] {
+    display: none;
+}
+
+/* Responsive Design */
+@media screen and (max-width: 768px) {
+    body {
+        padding: 10px;
+    }
+
+    .form-member, 
+    .member-list, 
+    .export-import-section {
+        width: 100%;
+    }
+
+    .export-import-section {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .export-import-section button,
+    .export-import-section label {
+        width: 100%;
+        text-align: center;
+    }
+}
+
+/* Animations */
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+.pulse-effect:hover {
+    animation: pulse 0.5s infinite;
+}
+
+/* Scrollbar Styles */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #0a0a0a;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #00ff41;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #00cc33;
+}
+
+
+/* Styling Tabel Member */
+#memberList {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #1a1a1a;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+#memberList td, 
+#memberList th {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #00ff41;
+    color: #00ff41;
+    font-family: 'Roboto Mono', monospace;
+}
+
+#memberList th {
+    background-color: #00ff41;
+    color: #0a0a0a;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: bold;
+}
+
+#memberList tr:nth-child(even) {
+    background-color: #111111;
+}
+
+#memberList tr:hover {
+    background-color: #2a2a2a;
+    transition: background-color 0.3s ease;
+}
+
+/* Styling Tombol Aksi */
+#memberList .tambah-poin,
+#memberList button {
+    padding: 8px 12px;
+    margin-right: 5px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: 'Roboto Mono', monospace;
+    font-size: 0.8em;
+    transition: all 0.3s ease;
+}
+
+#memberList .tambah-poin {
+    background-color: #00ff41;
+    color: #0a0a0a;
+}
+
+#memberList .tambah-poin:hover {
+    background-color: #00cc33;
+    transform: scale(1.05);
+}
+
+#memberList button:not(.tambah-poin) {
+    background-color: #ff0040;
+    color: white;
+}
+
+#memberList button:not(.tambah-poin):hover {
+    background-color: #cc0033;
+    transform: scale(1.05);
+}
+
+/* Efek Responsif */
+@media screen and (max-width: 768px) {
+    #memberList {
+        font-size: 0.9em;
+    }
+
+    #memberList td, 
+    #memberList th {
+        padding: 8px 10px;
+    }
+
+    #memberList button {
+        padding: 6px 10px;
+        font-size: 0.7em;
+    }
+}
+
+/* Animasi Sorting */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+#memberList tr {
+    animation: fadeIn 0.5s ease;
+}
+
+/* Highlight Poin Tinggi */
+#memberList tr:first-child {
+    background-color: #002a1a;
+    box-shadow: 0 0 15px rgba(0, 255, 65, 0.3);
+}
+
+/* Tooltip Tambahan */
+#memberList td[title] {
+    cursor: help;
+    position: relative;
+}
+
+#memberList td[title]:hover::after {
+    content: attr(title);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #00ff41;
+    color: #0a0a0a;
+    padding: 5px 10px;
+    border-radius: 4px;
+    white-space: nowrap;
+    font-size: 0.8em;
+    z-index: 1;
+}
+    </style>
+</head>
+<body>
+    <h1>Manajemen Member Pro</h1>
+    <div class="form-member">
+        <h2>Tambah Member</h2>
+        <input type="text" id="namaMember" placeholder="Nama Member" required>
+        <input type="text" id="noTelpMember" placeholder="Nomor Telepon" required>
+        <input type="password" id="pinMember" placeholder="PIN Member" required>
+        <button onclick="tambahMember()">Tambah Member</button>
+    </div>
+
+    <div class="member-list">
+        <h2>Daftar Member</h2>
+        <input type="text" id="searchMember" placeholder="Cari member berdasarkan nama atau nomor telepon" oninput="cariMember()">
+        <table>
+            <thead>
+                <tr>
+                    <th>Nama</th>
+                    <th>Nomor Telepon</th>
+                    <th>Poin</th>
+                    <th>Tanggal Terdaftar</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+            <tbody id="memberList">
+                <!-- Daftar member akan ditampilkan di sini -->
+            </tbody>
+        </table>
+    </div>
+<div class="export-import-section">
+    <button onclick="eksporMember()">Ekspor Data Member</button>
+    <label for="importMember">Impor Data Member
+        <input type="file" id="importMember" accept=".xlsx, .xls" onchange="imporMember(event)">
+    </label>
+    <button onclick="tampilkanInfoMember()">Info Member</button>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.5/xlsx.full.min.js"></script>
+    <script>
+        
+        
+        function eksporMember() {
+    const members = JSON.parse(localStorage.getItem('members')) || [];
+    
+    // Konversi data ke worksheet
+    const worksheet = XLSX.utils.json_to_sheet(members);
+
+    // Atur format kolom yang diinginkan
+    const range = XLSX.utils.decode_range(worksheet['!ref']);
+    for (let C = range.s.c; C <= range.e.c; ++C) {
+        const colAddress = XLSX.utils.encode_col(C) + "1"; // Ambil header kolom
+        const header = worksheet[colAddress]?.v;
+        
+        if (header) {
+            if (header.toLowerCase().includes('nomor')) {
+                for (let R = range.s.r + 1; R <= range.e.r; ++R) {
+                    const cellAddress = XLSX.utils.encode_cell({ r: R, c: C });
+                    if (worksheet[cellAddress]) {
+                        // Untuk kolom nomor telepon, set sebagai teks
+                        worksheet[cellAddress].z = '@'; // Format teks
+                    }
+                }
+            }
+        }
+    }
+
+    // Buat workbook dan tambahkan worksheet
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Data Member");
+
+    // Simpan file
+    XLSX.writeFile(workbook, "data_member_" + new Date().toISOString().split('T')[0] + ".xlsx");
+}
+        
+        function imporMember(event) {
+    const file = event.target.files[0];
+    const reader = new FileReader();
+
+    reader.onload = function(e) {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, {type: 'array'});
+        const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+        const members = XLSX.utils.sheet_to_json(worksheet);
+
+        const requiredFields = ['nama', 'noTelp', 'pin', 'poin', 'tanggalDaftar'];
+        const isValidData = members.every(member => 
+            requiredFields.every(field => member.hasOwnProperty(field))
+        );
+
+        if (!isValidData) {
+            alert('Format data tidak valid. Pastikan semua kolom ada.');
+            return;
+        }
+
+        const membersWithId = members.map(member => ({
+            ...member,
+            id: Date.now().toString() + Math.random().toString(36).substr(2, 9)
+        }));
+
+        localStorage.setItem('members', JSON.stringify(membersWithId));
+        muatDaftarMember();
+        alert('Data member berhasil diimpor!');
+    };
+
+    reader.readAsArrayBuffer(file);
+}
+        
+        
+        function tampilkanInfoMember() {
+    const members = JSON.parse(localStorage.getItem('members')) || [];
+    
+    const totalMember = members.length;
+    const totalPoin = members.reduce((sum, member) => sum + member.poin, 0);
+    const memberTertinggiPoin = members.reduce((max, member) => 
+        (max.poin || 0) > member.poin ? max : member, {});
+    
+    const infoMessage = `
+Informasi Member:
+- Total Member: ${totalMember}
+- Total Poin Keseluruhan: ${totalPoin}
+- Member dengan Poin Tertinggi: 
+  Nama: ${memberTertinggiPoin.nama}
+  Nomor Telepon: ${memberTertinggiPoin.noTelp}
+  Poin: ${memberTertinggiPoin.poin}
+- Tanggal Pendaftaran Pertama: ${members.length > 0 ? members[members.length - 1].tanggalDaftar : 'Tidak ada'}
+    `;
+
+    alert(infoMessage);
+}
+
+
+        function tambahMember() {
+            const nama = document.getElementById('namaMember').value.trim();
+            const noTelp = document.getElementById('noTelpMember').value.trim();
+            const pin = document.getElementById('pinMember').value.trim();
+
+            if (!nama || !noTelp || !pin) {
+                alert('Semua field harus diisi!');
+                return;
+            }
+
+            // Validasi nomor telepon
+            const teleponRegex = /^[0-9]{10,13}$/;
+            if (!teleponRegex.test(noTelp)) {
+                alert('Nomor telepon harus berisi 10-13 digit angka!');
+                return;
+            }
+
+            const members = JSON .parse(localStorage.getItem('members')) || [];
+            
+            // Cek apakah member sudah ada
+            const memberExist = members.some(member => 
+                member.nama.toLowerCase() === nama.toLowerCase() && 
+                member.noTelp === noTelp
+            );
+
+            if (memberExist) {
+                alert('Member dengan nama dan nomor telepon ini sudah terdaftar!');
+                return;
+            }
+
+            const newMember = {
+                id: Date.now().toString(),
+                nama: nama,
+                noTelp: noTelp,
+                pin: pin,
+                poin: 0,
+                tanggalDaftar: new Date().toLocaleDateString()
+            };
+
+            members.push(newMember);
+            localStorage.setItem('members', JSON.stringify(members));
+            document.getElementById('namaMember').value = '';
+            document.getElementById('noTelpMember').value = '';
+            document.getElementById('pinMember').value = '';
+            muatDaftarMember();
+        }
+
+        function muatDaftarMember() {
+            const members = JSON.parse(localStorage.getItem('members')) || [];
+            const memberList = document.getElementById('memberList');
+            memberList.innerHTML = '';
+
+            members.sort((a, b) => b.poin - a.poin).forEach(member => {
+                const memberElement = document.createElement('tr');
+                memberElement.innerHTML = `
+                    <td>${member.nama}</td>
+                    <td>${member.noTelp}</td>
+                    <td>${member.poin}</td>
+                    <td>${member.tanggalDaftar}</td>
+                    <td>
+                        <button class="tambah-poin" onclick="tambahPoin('${member.id}')">+ Poin</button>
+                        <button onclick="hapusMember('${member.id}')">Hapus</button>
+                    </td>
+                `;
+                memberList.appendChild(memberElement);
+            });
+        }
+
+        function tambahPoin(memberId) {
+            const members = JSON.parse(localStorage.getItem('members')) || [];
+            const memberIndex = members.findIndex(member => member.id === memberId);
+            
+            if (memberIndex !== -1) {
+                const poinDitambahkan = prompt('Berapa poin yang ingin ditambahkan?', '10');
+                const poinAngka = parseInt(poinDitambahkan);
+
+                if (!isNaN(poinAngka) && poinAngka > 0) {
+                    members[memberIndex].poin += poinAngka;
+                    localStorage.setItem('members', JSON.stringify(members));
+                    muatDaftarMember();
+                } else {
+                    alert('Masukkan poin yang valid!');
+                }
+            }
+        }
+
+        function hapusMember(memberId) {
+            const konfirmasi = confirm('Yakin ingin menghapus member ini?');
+            if (konfirmasi) {
+                const members = JSON.parse(localStorage.getItem('members')) || [];
+                const updatedMembers = members.filter(member => member.id !== memberId);
+                localStorage.setItem('members', JSON.stringify(updatedMembers));
+                muatDaftarMember();
+            }
+        }
+
+        function cariMember() {
+    const searchTerm = document.getElementById('searchMember').value.toLowerCase().trim();
+    const members = JSON.parse(localStorage.getItem('members')) || [];
+    const memberList = document.getElementById('memberList');
+    memberList.innerHTML = '';
+
+    // Tambahkan pengecekan dan sanitasi data
+    const sanitizedMembers = members.filter(member => 
+        member && 
+        typeof member.nama === 'string' && 
+        typeof member.noTelp === 'string'
+    );
+
+    const filteredMembers = sanitizedMembers.filter(member => 
+        (member.nama || '').toLowerCase().includes(searchTerm) || 
+        (member.noTelp || '').includes(searchTerm)
+    );
+
+    // Sorting dengan penanganan error
+    const sortedMembers = filteredMembers.sort((a, b) => {
+        // Pastikan poin adalah angka, default ke 0 jika tidak valid
+        const poinA = Number(a.poin) || 0;
+        const poinB = Number(b.poin) || 0;
+        return poinB - poinA;
+    });
+
+    // Render dengan penanganan error tambahan
+    sortedMembers.forEach(member => {
+        // Hindari error dengan memberikan default value
+        const nama = member.nama || 'Nama Tidak Tersedia';
+        const noTelp = member.noTelp || 'Nomor Tidak Tersedia';
+        const poin = Number(member.poin) || 0;
+        const tanggalDaftar = member.tanggalDaftar || 'Tanggal Tidak Tersedia';
+        const memberId = member.id || '';
+
+        // Cegah XSS dengan encoding HTML
+        const safeNama = escapeHTML(nama);
+        const safeNoTelp = escapeHTML(noTelp);
+        const safeTanggalDaftar = escapeHTML(tanggalDaftar);
+
+        const memberElement = document.createElement('tr');
+        memberElement.innerHTML = `
+            <td>${safeNama}</td>
+            <td>${safeNoTelp}</td>
+            <td>${poin}</td>
+            <td>${safeTanggalDaftar}</td>
+            <td>
+                <button class="tambah-poin" onclick="tambahPoin('${memberId}')">+ Poin</button>
+                <button onclick="hapusMember('${memberId}')">Hapus</button>
+            </td>
+        `;
+        memberList.appendChild(memberElement);
+    });
+
+    // Tampilkan pesan jika tidak ada hasil
+    if (sortedMembers.length === 0) {
+        const noResultElement = document.createElement('tr');
+        noResultElement.innerHTML = `
+            <td colspan="5" style="text-align: center; color: #888;">
+                Tidak ada member yang ditemukan
+            </td>
+        `;
+        memberList.appendChild(noResultElement);
+    }
+}
+
+// Fungsi pembantu untuk mencegah XSS
+function escapeHTML(str) {
+    if (typeof str !== 'string') return '';
+    return str.replace(/[&<>'"]/g, 
+        tag => ({
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            "'": '&#39;',
+            '"': '&quot;'
+        }[tag] || tag));
+}
+        // Muat daftar member saat halaman dibuka
+        window.onload = muatDaftarMember;
+            
+    </script>
+</body>
+</html>
