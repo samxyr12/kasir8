@@ -632,7 +632,7 @@ function downloadFaktur(nomorFaktur) {
     });
 }
 
-function generateFaktur() {
+async function generateFaktur() {
     // Ambil data pengiriman dari localStorage
     const pengiriman = JSON.parse(localStorage.getItem('pengirimanBarang')) || [];
 
@@ -640,6 +640,82 @@ function generateFaktur() {
     if (pengiriman.length === 0) {
         Swal.fire('Peringatan', 'Tidak ada barang yang diproses. Silakan tambahkan pengiriman terlebih dahulu.', 'warning');
         return;
+    }
+
+    // Ambil daftar alamat yang tersimpan
+    const daftarAlamat = JSON.parse(localStorage.getItem('daftarAlamat')) || [];
+
+    // Tampilkan modal untuk memilih atau menambah alamat
+    const { value: alamatPengiriman } = await Swal.fire({
+        title: 'Pilih Alamat Pengiriman',
+        html: `
+            <div class="swal-alamat-container">
+                <select id="pilihAlamat" class="form-control mb-3">
+                    <option value="">Pilih Alamat Tersimpan</option>
+                    ${daftarAlamat.map((alamat, index) => 
+                        `<option value="${index}">${alamat.nama} - ${alamat.alamat}</option>`
+                    ).join('')}
+                    <option value="baru">Tambah Alamat Baru</option>
+                </select>
+                
+                <div id="formAlamatBaru" style="display:none;">
+                    <input type="text" id="namaPenerima" class="swal2-input" placeholder="Nama Penerima">
+                    <input type="text" id="alamatLengkap" class="swal2-input" placeholder="Alamat Lengkap">
+                    <input type="text" id="nomorTelepon" class="swal2-input" placeholder="Nomor Telepon">
+                    <input type="text" id="kota" class="swal2-input" placeholder="Kota">
+                    <input type="text" id="kodePos" class="swal2-input" placeholder="Kode Pos">
+                </div>
+            </div>
+        `,
+        focusConfirm: false,
+        preConfirm: () => {
+            const pilihAlamat = document.getElementById('pilihAlamat').value;
+            
+            if (pilihAlamat === 'baru') {
+                const namaPenerima = document.getElementById('namaPenerima').value;
+                const alamatLengkap = document.getElementById('alamatLengkap').value;
+                const nomorTelepon = document.getElementById('nomorTelepon').value;
+                const kota = document.getElementById('kota').value;
+                const kodePos = document.getElementById('kodePos').value;
+                
+                if (!namaPenerima || !alamatLengkap || !nomorTelepon || !kota || !kodePos) {
+                    Swal.showValidationMessage('Silakan isi semua field alamat');
+                    return false;
+                }
+                
+                return {
+                    nama: namaPenerima,
+                    alamat: alamatLengkap,
+                    telepon: nomorTelepon,
+                    kota: kota,
+                    kodePos: kodePos
+                };
+            } else if (pilihAlamat === '') {
+                Swal.showValidationMessage('Silakan pilih alamat');
+                return false;
+            } else {
+                return daftarAlamat[pilihAlamat];
+            }
+        },
+        didRender: () => {
+            const pilihAlamat = document.getElementById('pilihAlamat');
+            const formAlamatBaru = document.getElementById('formAlamatBaru');
+            
+            pilihAlamat.addEventListener('change', (e) => {
+                formAlamatBaru.style.display = e.target.value === 'baru' ? 'block' : 'none';
+            });
+        }
+    });
+
+    if (!alamatPengiriman) return;
+
+    // Simpan alamat baru jika dipilih
+    if (!daftarAlamat.some(a => 
+        a.nama === alamatPengiriman.nama && 
+        a.alamat === alamatPengiriman.alamat
+    )) {
+        daftarAlamat.push(alamatPengiriman);
+        localStorage.setItem('daftarAlamat', JSON.stringify(daftarAlamat));
     }
 
     // Cek apakah faktur sudah pernah dibuat sebelumnya
@@ -701,111 +777,301 @@ function generateFaktur() {
         year: 'numeric' 
     });
 
-    // Simpan riwayat faktur
-    riwayatFaktur.push({
-        nomorFaktur: invoiceNumber,
-        tanggal: currentDate,
-        items: pengiriman
-    });
-    localStorage.setItem('riwayatFaktur', JSON.stringify(riwayatFaktur));
+   // Simpan riwayat faktur
+riwayatFaktur.push({
+    nomorFaktur: invoiceNumber,
+    tanggal: currentDate,
+    items: pengiriman,
+    alamat: alamatPengiriman  // Pastikan tidak ada spasi
+});
+localStorage.setItem('riwayatFaktur', JSON.stringify(riwayatFaktur));
 
     // Buat HTML untuk faktur
     let fakturHtml = `
-        <html>
-        <head>
-            <title>Faktur Pengiriman - FXID</title>
-            <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
-            <style>
-                body { font-family: Arial, sans-serif; }
-                .invoice-container { 
-                    max-width: 900px; 
-                    margin: auto; 
-                    padding: 20px; 
-                }
-                .invoice-header {
-                    display: flex;
-                    justify-content: space-between;
-                    margin-bottom: 20px;
-                }
-                .table { margin-top: 20px; }
-                @media print {
-                    .no-print { display: none; }
-                }
-            </style>
-        </head>
-        <body>
-            <div class="invoice-container">
-                <div class="invoice-header">
-                    <div>
-                        <h3>FXID</h3>
-                        <p>Alamat Perusahaan</p>
-                    </div>
-                    <div>
-                        <strong>Nomor Invoice:</strong> ${invoiceNumber}<br>
-                        <strong>Tanggal:</strong> ${currentDate}
-                    </div>
+<html>
+<head>
+    <title>Faktur Pengiriman - FXID</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"> 
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2ecc71;
+            --text-color: #333;
+            --bg-light: #f8f9fa;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-light);
+            line-height: 1.6;
+            color: var(--text-color);
+        }
+
+        .invoice-container {
+            width: 100%;
+            max-width: 100%;
+            height: auto;
+            margin: 10px; /* Mengurangi margin untuk memperkecil ukuran */
+            background-color: white;
+            box-shadow: none;
+            border-radius: 0;
+            overflow: hidden;
+            border: 1px solid #e0e0e0;
+            padding: 15px; /* Mengurangi padding untuk memperkecil ukuran */
+        }
+
+        .invoice-header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 15px; /* Mengurangi padding untuk memperkecil ukuran */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .company-info h3 {
+            margin-bottom: 5px;
+            font-weight: 700;
+        }
+
+        .invoice-details {
+            text-align: right;
+        }
+
+        .invoice-details h4 {
+            margin-bottom: 5px;
+        }
+
+        .address-section {
+            background-color: var(--bg-light);
+            padding: 10px; /* Mengurangi padding untuk memperkecil ukuran */
+            margin-top: 20px;
+        }
+
+        .recipient-address {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        .recipient-block {
+            width: 32%; /* Mengatur lebar setiap blok alamat */
+        }
+
+        .recipient-block h5 {
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 8px; /* Mengurangi padding untuk memperkecil ukuran */
+            margin-bottom: 10px;
+        }
+
+        .table {
+            margin-bottom: 0;
+            width: 97%; /* Mengurangi lebar tabel */
+            margin-left: auto; /* Mengatur margin kiri agar tabel terpusat */
+            margin-right: auto; /* Mengatur margin kanan agar tabel terpusat */
+        }
+
+        .table thead {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .total-row {
+            background-color: var(--bg-light);
+            font-weight: bold;
+        }
+
+        .signature-section {
+            padding: 15px; /* Mengurangi padding untuk memperkecil ukuran */
+            display: flex;
+            justify-content: space-between;
+            border-top: 1px solid #e0e0e0;
+            margin-top: 20px;
+        }
+
+        .signature-block {
+            text-align: center;
+            width: 40%;
+        }
+
+        .signature-line {
+            border-top: 1px solid #333;
+            width: 100%;
+            margin-top: 50px; /* Mengurangi margin untuk memperkecil ukuran */
+        }
+
+        .print-btn {
+            margin: 10px; /* Mengurangi margin untuk memperkecil ukuran */
+            text-align: center;
+        }
+
+        @media print {
+    body {
+        background-color: white;
+        margin: 0;
+        padding: 0;
+    }
+
+    .no-print {
+        display: none;
+    }
+
+    .invoice-container {
+        width: 100%;
+        min-height: 100vh;
+        page-break-after: always;
+        margin: 0;
+        padding: 20px;
+        box-sizing: border-box;
+    }
+
+    /* Pastikan konten tidak terpotong */
+    .invoice-header, 
+    .address-section, 
+    .table-container, 
+    .signature-section {
+        page-break-inside: avoid;
+        margin-bottom: 20px;
+    }
+
+    .table {
+        width: 100%;
+        page-break-inside: auto;
+    }
+
+    .table tbody {
+        page-break-inside: auto;
+    }
+
+    .table tr {
+        page-break-inside: avoid;
+    }
+
+    /* Tambahkan header dan footer di setiap halaman */
+    @page {
+        size: A4;
+        margin: 15mm;
+
+        /* Header di setiap halaman */
+        @top-left {
+            content: "FXID LOGISTICS - Invoice Pengiriman";
+            font-size: 10pt;
+            color: #666;
+        }
+
+        /* Footer di setiap halaman */
+        @bottom-right {
+            content: "Halaman " counter(page) " dari " counter(pages);
+            font-size: 10pt;
+            color: #666;
+        }
+    }
+
+    /* Jaga konsistensi warna saat cetak */
+    .invoice-header, 
+    .table thead {
+        -webkit-print-color-adjust: exact;
+        color-adjust: exact;
+    }
+}
+    </style>
+</head>
+<body>
+    <div class="invoice-container">
+        <!-- Header -->
+        <div class="invoice-header">
+            <div class="company-info">
+                <h3>FXID LOGISTICS</h3>
+                <p>kantor utama logistic</p>
+                <p>Telp : 0895-2633-5486</p>
+            </div>
+            <div class="invoice-details">
+                <h4>Invoice Pengiriman</h4>
+                <p><strong>Nomor:</strong> ${invoiceNumber}</p>
+                <p><strong>Tanggal:</strong> ${currentDate}</p>
+            </div>
+        </div>
+
+        <!-- Alamat Penerima -->
+        <div class="address-section">
+            <div class="recipient-address">
+                <div class="recipient-block">
+                    <h5>Nama Penerima</h5>
+                    <p>${alamatPengiriman.nama}</p>
                 </div>
-
-                <table class="table table-bordered">
-                    <thead>
-                        <tr>
-                            <th>Tanggal</th>
-                            <th>Kode Barang</th>
-                            <th>Nama Barang</th>
-                            <th>Jumlah</th>
-                            <th>Harga Jual</th>
-                            <th>Total</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-    `;
-
-    // Variabel untuk menyimpan total keseluruhan
-    let totalFaktur = 0;
-
-    // Tambahkan item-item pengiriman ke tabel
-    pengiriman.forEach(item => {
-        fakturHtml += `
-            <tr>
-                <td>${item.tanggal}</td>
-                <td>${item.kodeBarang}</td>
-                <td>${item.namaBarang}</td>
-                <td>${item.jumlah}</td>
-                <td>Rp ${item.hargaJual.toLocaleString('id-ID')}</td>
-                <td>Rp ${item.total.toLocaleString('id-ID')}</td>
-            </tr>
-        `;
-        totalFaktur += item.total;
-    });
-
-    // Tambahkan baris total
-    fakturHtml += `
-                    <tr>
-                        <td colspan="5" class="text-end"><strong>Total Keseluruhan</strong></td>
-                        <td><strong>Rp ${totalFaktur.toLocaleString('id-ID')}</strong></td>
-                    </tr>
-                    </tbody>
-                </table>
-
-                <div class="signature-section mt-4 d-flex justify-content-between">
-                    <div class="text-center">
-                        <p>Hormat Kami,</p>
-                        <div style="border-top: 1px solid black; width: 200px; margin: 50px auto 0;"></div>
-                        <p>Pengirim</p>
-                    </div>
-                    <div class="text-center">
-                        <p>Penerima,</p>
-                        <div style="border-top: 1px solid black; width: 200px; margin: 50px auto 0;"></div>
-                        <p>Tanda Tangan</p>
-                    </div>
+                <div class="recipient-block">
+                    <h5>Nomor</h5>
+                    <p>${alamatPengiriman.telepon}</p>
                 </div>
-
-                <div class="text-center mt-4 no-print">
-                    <button onclick="window.print()" class="btn btn btn-primary">Cetak Faktur</button>
+                <div class="recipient-block">
+                    <h5>Alamat Penerima</h5>
+                    <p>${alamatPengiriman.alamat}</p>
+                    <p>${alamatPengiriman.kota}, ${alamatPengiriman.kodePos}</p>
                 </div>
             </div>
-        </body>
-        </html>
+        </div>
+
+        <!-- Tabel Barang -->
+        <table class="table table-striped table-bordered">
+            <thead>
+                <tr>
+                    <th>Kode Barang</th>
+                    <th>Nama Barang</th>
+                    <th>Jumlah</th>
+                    <th>Harga Satuan</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${pengiriman.map(item => `
+                    <tr>
+                        <td>${item.kodeBarang}</td>
+                        <td>${item.namaBarang}</td>
+                        <td>${item.jumlah}</td>
+                        <td>${item.hargaJual.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' })}</td>
+                        <td>${(item.jumlah * item.hargaJual).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' })}</td>
+                    </tr>
+                `).join('')}
+                <tr class="total-row">
+                    <td colspan="4" class="text-end">Total</td>
+                    <td>${pengiriman.reduce((total, item) => total + (item.jumlah * item.hargaJual), 0).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' })}</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Tanda Tangan -->
+        <div class="signature-section">
+            <div class="signature-block">
+                <p>Hormat Kami,</p>
+                <div class="signature-line"></div>
+                <p>Pengirim</p>
+            </div>
+            <div class="signature-block">
+                <p>Penerima,</p>
+                <div class="signature-line"></div>
+                <p>Tanda Tangan</p>
+            </div>
+        </div>
+
+        <!-- Tombol Cetak -->
+        <div class="print-btn no-print">
+            <button onclick="window.print()" class="btn btn-primary btn-lg">
+                <i class="fas fa-print"></i> Cetak Faktur
+            </button>
+        </div>
+    </div>
+</body>
+</html>
     `;
 
     // Buka jendela baru untuk menampilkan faktur
@@ -814,6 +1080,9 @@ function generateFaktur() {
     newWindow.document.close();
     newWindow.focus();
 }
+  
+  
+  
     </script>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
@@ -821,3 +1090,6 @@ function generateFaktur() {
 
 </body>
 </html>
+
+
+
